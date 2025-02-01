@@ -12,3 +12,5 @@ Run project
     "startPage": 1
     }
     '
+- Test summarize description using AI  
+    curl -X GET "http://localhost:3000/generate-summary"
