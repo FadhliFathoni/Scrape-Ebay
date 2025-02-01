@@ -3,7 +3,6 @@
 This project allows you to scrape eBay listings and generate AI-based summaries of the scraped descriptions.
 
 ## Initialize Project
-
 1. Run the following command to initialize the project:
     
     npm init -y
@@ -13,7 +12,6 @@ This project allows you to scrape eBay listings and generate AI-based summaries 
     npm install express playwright fs
 
 ## Run Project
-
 1. Start the project with:
     
     node app.js
@@ -37,6 +35,7 @@ To use the AI summarization feature, you must first install **Ollama** on your d
 1. Visit [Ollama's download page](https://ollama.com/download) to install Ollama.
 
 2. After installation, run the following command in your terminal to install the AI model:
+    
     ollama run deepseek-coder-v2
 
 3. Once the model is set up, you can test the AI summarization endpoint with the following `curl` command:
