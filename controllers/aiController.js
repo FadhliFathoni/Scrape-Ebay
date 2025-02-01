@@ -1,8 +1,5 @@
 const axios = require('axios');
 const fs = require("fs");
-const express = require('express');
-const app = express();
-const port = 3000;
 
 async function getResponseFromFile(parameter) {
     const strictCodeOnly = "Return only JSON output, no explanations, descriptions, or comments.";
@@ -29,11 +26,4 @@ async function getResponseFromFile(parameter) {
     }
 }
 
-app.get('/generate-summary', async (req, res) => {
-    const result = await getResponseFromFile();
-    res.json(result);
-});
-
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-});
+module.exports = { getResponseFromFile };
