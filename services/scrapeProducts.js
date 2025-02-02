@@ -1,16 +1,12 @@
 const { chromium } = require('playwright');
 
-async function scrapeProducts(pageNumber, baseUrl) {
+async function scrapeProducts(baseUrl) {
   const browser = await chromium.launch({ headless: false });
-  const context = await browser.newContext();
+  const context = await browser.newContext({userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"});
   const page = await context.newPage();
 
   try {
-    const url = baseUrl.replace(/_pgn=\d+/, `_pgn=${pageNumber}`).includes('_pgn=') 
-    ? baseUrl.replace(/_pgn=\d+/, `_pgn=${pageNumber}`) 
-    : `${baseUrl}&_pgn=${pageNumber}`;
-
-    await page.goto(url, { timeout: 60000, waitUntil: 'domcontentloaded' });
+    await page.goto(baseUrl, { timeout: 60000, waitUntil: 'domcontentloaded' });
 
     const products = [];
     const productLinks = await page.locator('.s-item').evaluateAll((items) => {
@@ -32,22 +28,31 @@ async function scrapeProducts(pageNumber, baseUrl) {
           const response = await productPage.goto(product.link, { timeout: 60000, waitUntil: 'domcontentloaded' });
           if (!response) throw new Error("Timeout: Page did not load");
 
-          const frame = await productPage.frameLocator('iframe[title="Seller\'s description of item"]');
-          if (await frame.locator('[data-testid="x-item-description-child"]').count() > 0) {
-            const allContent = await frame.locator('[data-testid="x-item-description-child"]').innerText();
-            description = allContent.replace(/\n/g, ' ').trim();
+          let frame;
+          try {
+            frame = await productPage.frameLocator('iframe[title="Seller\'s description of item"]');
+          } catch (error) {
+            console.warn("No iframe found for description.");
+          }
+
+          if (frame) {
+            const elements = await frame.locator('[data-testid="x-item-description-child"]').all();
+            if (elements.length > 0) {
+              description = (await elements[0].innerText()).replace(/\n/g, ' ').trim();
+            }
           }
         } catch (error) {
           console.error(`Failed to load product page: ${product.link}`, error);
+        } finally {
+          await productPage.close();
         }
-        await productPage.close();
       }
       products.push({ ...product, description });
     }
 
     return products;
   } catch (error) {
-    console.error(`Error scraping page ${pageNumber}:`, error);
+    console.error(`Error scraping page ${baseUrl}:`, error);
     return [];
   } finally {
     await context.close();
